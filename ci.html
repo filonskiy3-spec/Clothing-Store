@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dev Team Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+         :root {
+            --bg: #f5f7fc;
+            --surface: #ffffff;
+            --text: #1d2940;
+            --muted: #8ea0bc;
+            --muted-2: #6e829f;
+            --border: #dfe7f2;
+            --shadow: 0 8px 24px rgba(20, 34, 60, 0.06);
+            --purple: #5647f5;
+            --purple-2: #4a3deb;
+            --green: #13c380;
+            --green-dark: #0fa96d;
+            --green-soft: #e9faf3;
+            --yellow: #f5b31d;
+            --yellow-dark: #d88400;
+            --yellow-soft: #fff5df;
+            --red: #ff4459;
+            --red-soft: #fff1f2;
+            --header-bg: rgba(245, 247, 252, 0.92);
+            --team-green-bg: #eef8f3;
+            --team-yellow-bg: #fbf7e6;
+            --team-red-bg: #fff0f2;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Inter, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .app {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 0 26px 36px;
+        }
+        
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            height: 88px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--purple), var(--purple-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 10px 20px rgba(86, 71, 245, 0.22);
+        }
+        
+        .logo svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .brand-title {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        
+        .brand-subtitle {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .sprint-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #eef3fa;
+            border-radius: 16px;
+            padding: 6px;
+        }
+        
+        .nav-arrow,
+        .sprint-btn {
+            border: 0;
+            background: transparent;
+            font-family: inherit;
+            cursor: pointer;
+            transition: .18s ease;
+        }
+        
+        .nav-arrow {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            color: var(--muted-2);
+            font-size: 18px;
+        }
+        
+        .nav-arrow:hover {
+            background: white;
+        }
+        
+        .sprint-btn {
+            height: 34px;
+            min-width: 102px;
+            padding: 0 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #607592;
+        }
+        
+        .sprint-btn:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+        /* выбранный спринт */
+        /* выбранный спринт, если это не текущий */
+        
+        .sprint-btn.active {
+            background: white;
+            color: var(--purple);
+            box-shadow: 0 2px 10px rgba(40, 50, 85, 0.08);
+        }
+        /* текущий спринт, но пользователь сейчас смотрит другой */
+        
+        .sprint-btn.current {
+            background: linear-gradient(135deg, #16c784, #0fa96d);
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(19, 195, 128, 0.18);
+        }
+        /* текущий спринт И он сейчас открыт */
+        
+        .sprint-btn.current.active {
+            background: linear-gradient(135deg, #0b9f68, #087a50);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(8, 122, 80, 0.34), inset 0 0 0 2px rgba(255, 255, 255, 0.28);
+            transform: translateY(-1px);
+        }
+        
+        .content {
+            padding-top: 30px;
+        }
+        
+        .top-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 26px;
+        }
+        
+        .title-wrap h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        
+        .title-wrap .date {
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            color: #516581;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot.red {
+            background: var(--red);
+        }
+        
+        .dot.yellow {
+            background: var(--yellow);
+        }
+        
+        .dot.green {
+            background: var(--green);
+        }
+        
+        .tabs {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            border-radius: 18px;
+            background: white;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(20, 34, 60, 0.03);
+            margin-bottom: 22px;
+        }
+        
+        .tab-btn {
+            border: 0;
+            background: transparent;
+            height: 40px;
+            padding: 0 18px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--muted-2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: .18s ease;
+        }
+        
+        .tab-btn:hover {
+            background: #f4f7fb;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--purple), var(--purple-2));
+            color: white;
+            box-shadow: 0 10px 20px rgba(86, 71, 245, 0.22);
+        }
+        
+        .tab-btn svg,
+        .filter-label svg,
+        .metric-title svg {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2.1;
+            flex-shrink: 0;
+        }
+        
+        .alert {
+            display: none;
+            width: 100%;
+            margin: 0 0 20px;
+            padding: 16px 18px;
+            border: 1px solid rgba(255, 68, 89, 0.25);
+            background: rgba(255, 68, 89, 0.05);
+            border-radius: 16px;
+            color: #c72f40;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .alert.show {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--muted-2);
+            font-weight: 700;
+            margin-right: 2px;
+        }
+        
+        .filter-btn {
+            height: 32px;
+            padding: 0 14px;
+            border-radius: 11px;
+            border: 1px solid #dbe3ee;
+            background: white;
+            color: #586c88;
+            font-family: inherit;
+            font-weight: 800;
+            cursor: pointer;
+            transition: .18s ease;
+        }
+        
+        .filter-btn.active {
+            background: #20304a;
+            border-color: #20304a;
+            color: white;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(250px, 1fr));
+            gap: 18px;
+        }
+        
+        .metric-card {
+            min-height: 214px;
+            border-radius: 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--yellow);
+            box-shadow: var(--shadow);
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .metric-card.problem {
+            border-left-color: var(--red);
+        }
+        
+        .metric-card.attention {
+            border-left-color: var(--yellow);
+        }
+        
+        .metric-card.normal {
+            border-left-color: var(--green);
+        }
+        
+        .metric-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .metric-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #697c98;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .status-badge {
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        
+        .status-badge.normal {
+            color: var(--green-dark);
+            background: var(--green-soft);
+            border-radius: 999px;
+            padding: 5px 10px;
+        }
+        
+        .status-badge.attention {
+            color: var(--yellow-dark);
+        }
+        
+        .status-badge.problem {
+            color: #e63648;
+        }
+        
+        .metric-value {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .metric-value .num {
+            font-size: 30px;
+            line-height: 1;
+            font-weight: 500;
+            letter-spacing: -0.05em;
+        }
+        
+        .metric-value .unit {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 800;
+        }
+        
+        .delta {
+            margin-bottom: 14px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--green);
+        }
+        
+        .delta.red {
+            color: var(--red);
+        }
+        
+        .delta.gray {
+            color: #99a8be;
+        }
+        
+        .metric-desc {
+            color: #92a1b8;
+            line-height: 1.45;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        
+        .metric-note {
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            line-height: 1.35;
+            font-weight: 800;
+            background: #fff5f3;
+            color: #e64a3a;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(320px, 1fr));
+            gap: 18px;
+        }
+        
+        .chart-card,
+        .team-panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            padding: 20px 20px 14px;
+        }
+        
+        .chart-title,
+        .team-panel-title {
+            margin: 0 0 2px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        
+        .chart-subtitle,
+        .team-panel-subtitle {
+            margin: 0 0 12px;
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        
+        .chart-wrap {
+            height: 260px;
+        }
+        
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .team-legend {
+            display: flex;
+            gap: 16px;
+            color: #637894;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(260px, 1fr));
+            gap: 14px;
+        }
+        
+        .member-card {
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #ebeff6;
+        }
+        
+        .member-card.ok {
+            background: var(--team-green-bg);
+        }
+        
+        .member-card.risk {
+            background: var(--team-yellow-bg);
+        }
+        
+        .member-card.blocked {
+            background: var(--team-red-bg);
+        }
+        
+        .member-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .member-info {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .avatar.purple {
+            background: #8b5cf6;
+        }
+        
+        .avatar.blue {
+            background: #3b82f6;
+        }
+        
+        .avatar.green {
+            background: #10b981;
+        }
+        
+        .avatar.pink {
+            background: #ff2d6f;
+        }
+        
+        .avatar.orange {
+            background: #f59e0b;
+        }
+        
+        .avatar.cyan {
+            background: #06b6d4;
+        }
+        
+        .member-name {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .member-role {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        
+        .member-state {
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+            padding-top: 3px;
+        }
+        
+        .member-state.ok {
+            color: var(--green-dark);
+        }
+        
+        .member-state.risk {
+            color: var(--yellow-dark);
+        }
+        
+        .member-state.blocked {
+            color: #e63648;
+        }
+        
+        .tasks-row,
+        .prs-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #6c809d;
+            font-size: 14px;
+            font-weight: 700;
+            margin: 10px 0 6px;
+        }
+        
+        .progress {
+            height: 6px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress>span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+        }
+        
+        .progress.green>span {
+            background: #15c381;
+        }
+        
+        .progress.yellow>span {
+            background: #f0b01d;
+        }
+        
+        .progress.red>span {
+            background: #ff4459;
+        }
+        
+        .footer-note {
+            margin-top: 34px;
+            text-align: center;
+            color: #c5cfdd;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        
+        .hide {
+            display: none !important;
+        }
+        
+        @media (max-width: 1180px) {
+            .metrics-grid,
+            .charts-grid,
+            .team-grid {
+                grid-template-columns: repeat(2, minmax(260px, 1fr));
+            }
+            .header {
+                height: auto;
+                padding: 16px 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            .top-row {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 760px) {
+            .app {
+                padding: 0 14px 30px;
+            }
+            .metrics-grid,
+            .charts-grid,
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            .sprint-nav,
+            .tabs {
+                overflow-x: auto;
+                width: 100%;
+            }
+            .legend,
+            .team-legend {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="brand">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M6 20V10" />
+            <path d="M12 20V4" />
+            <path d="M18 20v-7" />
+          </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">Dev Team Dashboard</h1>
+                    <p class="brand-subtitle">Метрики команды разработки · 6 разработчиков</p>
+                </div>
+            </div>
+
+            <div class="sprint-nav" id="sprintNav"></div>
+        </header>
+
+        <main class="content">
+            <div class="top-row">
+                <div class="title-wrap">
+                    <h1><span id="sprintTitle">Спринт 1</span><span class="date" id="sprintDate">1–14 февр.</span></h1>
+                </div>
+
+                <div class="legend" id="legendBox"></div>
+            </div>
+
+            <div class="tabs" id="tabButtons">
+                <button class="tab-btn active" data-tab="overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M14 14h6v6h-6z"/>
+          </svg>
+          Обзор метрик
+        </button>
+                <button class="tab-btn" data-tab="graphs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M5 19V9"/><path d="M12 19V5"/><path d="M19 19v-7"/>
+          </svg>
+          Графики
+        </button>
+                <button class="tab-btn" data-tab="team">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Команда
+        </button>
+            </div>
+
+            <div class="alert" id="alertBox"></div>
+
+            <section class="section active" id="overviewSection">
+                <div class="filters" id="filters">
+                    <div class="filter-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+            </svg> Фильтр:
+                    </div>
+                    <button class="filter-btn active" data-filter="all">Все</button>
+                    <button class="filter-btn" data-filter="issues">⚠ Проблемы</button>
+                    <button class="filter-btn" data-filter="normal">✓ Норма</button>
+                </div>
+
+                <div class="metrics-grid" id="metricsGrid"></div>
+            </section>
+
+            <section class="section" id="graphsSection">
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Скорость команды (velocity)</h3>
+                        <p class="chart-subtitle">Story points: запланировано vs выполнено</p>
+                        <div class="chart-wrap"><canvas id="velocityChart"></canvas></div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3 class="chart-title">Баги за спринт</h3>
+                        <p class="chart-subtitle">Количество найденных дефектов</p>
+                        <div class="chart-wrap"><canvas id="bugsChart"></canvas></div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3 class="chart-title">Время ревью PR</h3>
+                        <p class="chart-subtitle">Среднее время до мержа (часы)</p>
+                        <div class="chart-wrap"><canvas id="reviewChart"></canvas></div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3 class="chart-title">Cycle time и релизы</h3>
+                        <p class="chart-subtitle">Среднее время задачи (дни) и кол-во деплоев</p>
+                        <div class="chart-wrap"><canvas id="cycleDeployChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="teamSection">
+                <div class="team-panel">
+                    <div class="team-header">
+                        <div>
+                            <h3 class="team-panel-title">Команда</h3>
+                            <p class="team-panel-subtitle">Прогресс каждого разработчика в спринте</p>
+                        </div>
+                        <div class="team-legend">
+                            <span class="legend-item"><span class="dot green"></span>В порядке</span>
+                            <span class="legend-item"><span class="dot yellow"></span>Риск</span>
+                            <span class="legend-item"><span class="dot red"></span>Блокер</span>
+                        </div>
+                    </div>
+
+                    <div class="team-grid" id="teamGrid"></div>
+                </div>
+            </section>
+
+            <div class="footer-note">
+                Данные обновляются автоматически из Jira, GitHub и CI/CD · Последнее обновление: сегодня в 09:42
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const sprintData = [{
+            id: 1,
+            name: "Спринт 1",
+            date: "1–14 февр.",
+            current: false,
+            legend: {
+                problem: 0,
+                attention: 0,
+                normal: 7
+            },
+            alert: "",
+            metrics: [{
+                key: "velocity",
+                title: "Velocity команды",
+                status: "normal",
+                value: "47",
+                unit: "SP",
+                delta: "— % к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Выполнено 47 из 52 story points. Показывает реальную производительность команды за спринт."
+            }, {
+                key: "tasks",
+                title: "Задачи в срок",
+                status: "normal",
+                value: "83",
+                unit: "%",
+                delta: "— % к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Доля задач, закрытых до окончания спринта. Норма — выше 80%."
+            }, {
+                key: "bugs",
+                title: "Плотность багов",
+                status: "normal",
+                value: "0.17",
+                unit: "баг/SP",
+                delta: "— % к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Число багов на story point. Позволяет оценить качество кода независимо от объёма работы."
+            }, {
+                key: "review",
+                title: "Время ревью PR",
+                status: "normal",
+                value: "6.2",
+                unit: "ч",
+                delta: "— % к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Среднее время от открытия PR до мержа. Цель — до 8 часов. Долгое ревью тормозит поставку."
+            }, {
+                key: "cycle",
+                title: "Cycle time",
+                status: "normal",
+                value: "3.1",
+                unit: "дн.",
+                delta: "— % к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Среднее время от начала разработки задачи до её релиза. Чем меньше — тем быстрее поставка."
+            }, {
+                key: "deploys",
+                title: "Деплои за спринт",
+                status: "normal",
+                value: "4",
+                unit: "шт.",
+                delta: "— % к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Количество релизов в продакшн. Частые деплои снижают риски и ускоряют обратную связь."
+            }, {
+                key: "goal",
+                title: "Цель спринта",
+                status: "normal",
+                value: "88",
+                unit: "%",
+                delta: "— % к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Процент достижения спринтовой цели. Отражает, попадает ли команда в бизнес-ценность итерации."
+            }]
+        }, {
+            id: 2,
+            name: "Спринт 2",
+            date: "17 февр. – 3 марта",
+            current: false,
+            legend: {
+                problem: 5,
+                attention: 2,
+                normal: 0
+            },
+            alert: "Требует внимания: 5 показателей находятся в красной зоне. Рекомендуется провести синхронизацию команды.",
+            metrics: [{
+                key: "velocity",
+                title: "Velocity команды",
+                status: "attention",
+                value: "38",
+                unit: "SP",
+                delta: "↘ -19% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Выполнено 38 из 55 story points. Показывает реальную производительность команды за спринт.",
+                note: "⚠ Выполнено лишь 69% от плана — нужен разбор причин"
+            }, {
+                key: "tasks",
+                title: "Задачи в срок",
+                status: "problem",
+                value: "62",
+                unit: "%",
+                delta: "↘ -25% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Доля задач, закрытых до окончания спринта. Норма — выше 80%.",
+                note: "⚠ Критически низко. Проверьте блокеры и нереалистичные оценки"
+            }, {
+                key: "bugs",
+                title: "Плотность багов",
+                status: "problem",
+                value: "0.37",
+                unit: "баг/SP",
+                delta: "↗ +117% к прошлому спринту",
+                deltaColor: "red",
+                desc: "Число багов на story point. Позволяет оценить качество кода независимо от объёма работы.",
+                note: "⚠ Высокое число дефектов. Рассмотрите усиление code review"
+            }, {
+                key: "review",
+                title: "Время ревью PR",
+                status: "problem",
+                value: "14.5",
+                unit: "ч",
+                delta: "↗ +133% к прошлому спринту",
+                deltaColor: "red",
+                desc: "Среднее время от открытия PR до мержа. Цель — до 8 часов. Долгое ревью тормозит поставку.",
+                note: "⚠ PR зависают. Назначьте явных ревьюеров или введите дедлайн"
+            }, {
+                key: "cycle",
+                title: "Cycle time",
+                status: "problem",
+                value: "5.4",
+                unit: "дн.",
+                delta: "↗ +74% к прошлому спринту",
+                deltaColor: "red",
+                desc: "Среднее время от начала разработки задачи до её релиза. Чем меньше — тем быстрее поставка."
+            }, {
+                key: "deploys",
+                title: "Деплои за спринт",
+                status: "attention",
+                value: "2",
+                unit: "шт.",
+                delta: "↘ -50% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Количество релизов в продакшн. Частые деплои снижают риски и ускоряют обратную связь."
+            }, {
+                key: "goal",
+                title: "Цель спринта",
+                status: "problem",
+                value: "55",
+                unit: "%",
+                delta: "↘ -37% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Процент достижения спринтовой цели. Отражает, попадает ли команда в бизнес-ценность итерации."
+            }]
+        }, {
+            id: 3,
+            name: "Спринт 3",
+            date: "4–18 марта",
+            current: false,
+            legend: {
+                problem: 0,
+                attention: 3,
+                normal: 4
+            },
+            alert: "",
+            metrics: [{
+                key: "velocity",
+                title: "Velocity команды",
+                status: "normal",
+                value: "49",
+                unit: "SP",
+                delta: "↗ +29% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Выполнено 49 из 50 story points. Показывает реальную производительность команды за спринт."
+            }, {
+                key: "tasks",
+                title: "Задачи в срок",
+                status: "normal",
+                value: "87",
+                unit: "%",
+                delta: "↗ +40% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Доля задач, закрытых до окончания спринта. Норма — выше 80%."
+            }, {
+                key: "bugs",
+                title: "Плотность багов",
+                status: "attention",
+                value: "0.22",
+                unit: "баг/SP",
+                delta: "↘ -40% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Число багов на story point. Позволяет оценить качество кода независимо от объёма работы."
+            }, {
+                key: "review",
+                title: "Время ревью PR",
+                status: "attention",
+                value: "9.8",
+                unit: "ч",
+                delta: "↘ -32% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Среднее время от открытия PR до мержа. Цель — до 8 часов. Долгое ревью тормозит поставку."
+            }, {
+                key: "cycle",
+                title: "Cycle time",
+                status: "attention",
+                value: "4.2",
+                unit: "дн.",
+                delta: "↘ -22% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Среднее время от начала разработки задачи до её релиза. Чем меньше — тем быстрее поставка."
+            }, {
+                key: "deploys",
+                title: "Деплои за спринт",
+                status: "normal",
+                value: "3",
+                unit: "шт.",
+                delta: "↗ +50% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Количество релизов в продакшн. Частые деплои снижают риски и ускоряют обратную связь."
+            }, {
+                key: "goal",
+                title: "Цель спринта",
+                status: "normal",
+                value: "80",
+                unit: "%",
+                delta: "↗ +45% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Процент достижения спринтовой цели. Отражает, попадает ли команда в бизнес-ценность итерации."
+            }]
+        }, {
+            id: 4,
+            name: "Спринт 4",
+            date: "19 марта – 2 апр.",
+            current: true,
+            legend: {
+                problem: 0,
+                attention: 6,
+                normal: 1
+            },
+            alert: "",
+            metrics: [{
+                key: "velocity",
+                title: "Velocity команды",
+                status: "attention",
+                value: "42",
+                unit: "SP",
+                delta: "↘ -14% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Выполнено 42 из 54 story points. Показывает реальную производительность команды за спринт."
+            }, {
+                key: "tasks",
+                title: "Задачи в срок",
+                status: "attention",
+                value: "71",
+                unit: "%",
+                delta: "↘ -18% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Доля задач, закрытых до окончания спринта. Норма — выше 80%."
+            }, {
+                key: "bugs",
+                title: "Плотность багов",
+                status: "attention",
+                value: "0.21",
+                unit: "баг/SP",
+                delta: "↘ -4% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Число багов на story point. Позволяет оценить качество кода независимо от объёма работы."
+            }, {
+                key: "review",
+                title: "Время ревью PR",
+                status: "attention",
+                value: "11.2",
+                unit: "ч",
+                delta: "↗ +14% к прошлому спринту",
+                deltaColor: "red",
+                desc: "Среднее время от открытия PR до мержа. Цель — до 8 часов. Долгое ревью тормозит поставку."
+            }, {
+                key: "cycle",
+                title: "Cycle time",
+                status: "attention",
+                value: "4.8",
+                unit: "дн.",
+                delta: "↗ +14% к прошлому спринту",
+                deltaColor: "red",
+                desc: "Среднее время от начала разработки задачи до её релиза. Чем меньше — тем быстрее поставка."
+            }, {
+                key: "deploys",
+                title: "Деплои за спринт",
+                status: "normal",
+                value: "3",
+                unit: "шт.",
+                delta: "— 0% к прошлому спринту",
+                deltaColor: "gray",
+                desc: "Количество релизов в продакшн. Частые деплои снижают риски и ускоряют обратную связь."
+            }, {
+                key: "goal",
+                title: "Цель спринта",
+                status: "attention",
+                value: "74",
+                unit: "%",
+                delta: "↘ -8% к прошлому спринту",
+                deltaColor: "green",
+                desc: "Процент достижения спринтовой цели. Отражает, попадает ли команда в бизнес-ценность итерации."
+            }]
+        }];
+
+        const teamMembers = [{
+            initials: "АП",
+            avatar: "purple",
+            name: "Алексей Петров",
+            role: "Senior Frontend",
+            tasks: "7/10",
+            percent: 70,
+            prs: 3,
+            state: "ok"
+        }, {
+            initials: "МК",
+            avatar: "blue",
+            name: "Мария Козлова",
+            role: "Backend Dev",
+            tasks: "5/9",
+            percent: 56,
+            prs: 2,
+            state: "risk"
+        }, {
+            initials: "ДИ",
+            avatar: "green",
+            name: "Дмитрий Иванов",
+            role: "Frontend Dev",
+            tasks: "4/8",
+            percent: 50,
+            prs: 4,
+            state: "blocked"
+        }, {
+            initials: "АС",
+            avatar: "pink",
+            name: "Анна Сидорова",
+            role: "QA Engineer",
+            tasks: "8/10",
+            percent: 80,
+            prs: 0,
+            state: "ok"
+        }, {
+            initials: "ПН",
+            avatar: "orange",
+            name: "Павел Новиков",
+            role: "Backend Dev",
+            tasks: "6/9",
+            percent: 67,
+            prs: 2,
+            state: "ok"
+        }, {
+            initials: "ЕМ",
+            avatar: "cyan",
+            name: "Елена Морозова",
+            role: "Tech Lead",
+            tasks: "5/8",
+            percent: 63,
+            prs: 2,
+            state: "risk"
+        }];
+
+        let selectedSprintId = 1;
+        let activeTab = "overview";
+        let activeFilter = "all";
+
+        const sprintNav = document.getElementById("sprintNav");
+        const sprintTitle = document.getElementById("sprintTitle");
+        const sprintDate = document.getElementById("sprintDate");
+        const legendBox = document.getElementById("legendBox");
+        const alertBox = document.getElementById("alertBox");
+        const metricsGrid = document.getElementById("metricsGrid");
+        const teamGrid = document.getElementById("teamGrid");
+
+        function getCurrentSprint() {
+            return sprintData.find(s => s.id === selectedSprintId);
+        }
+
+        function statusLabel(status) {
+            if (status === "normal") return "В норме";
+            if (status === "attention") return "Внимание";
+            return "Проблема";
+        }
+
+        function iconSvg(key) {
+            const icons = {
+                velocity: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h7v7"/></svg>`,
+                tasks: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+                bugs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2z"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>`,
+                review: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 7h.01"/><path d="M7 3v4"/><path d="M7 7l5 5"/><path d="M12 12h7a2 2 0 0 1 2 2v7"/></svg>`,
+                cycle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
+                deploys: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>`,
+                goal: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`
+            };
+            return icons[key] || "";
+        }
+
+        function renderSprintNav() {
+            sprintNav.innerHTML = `
+        <button class="nav-arrow" aria-label="Назад">‹</button>
+        ${sprintData.map(s => {
+          const cls = [
+            "sprint-btn",
+            s.id === selectedSprintId ? "active" : "",
+            s.current ? "current" : ""
+          ].join(" ").trim();
+          return `<button class="${cls}" data-sprint="${s.id}">${s.name}</button>`;
+        }).join("")}
+        <button class="nav-arrow" aria-label="Вперёд">›</button>
+      `;
+
+      sprintNav.querySelectorAll(".sprint-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectedSprintId = Number(btn.dataset.sprint);
+          render();
+        });
+      });
+    }
+
+    function renderHeaderMeta() {
+      const sprint = getCurrentSprint();
+      sprintTitle.textContent = sprint.name;
+      sprintDate.textContent = sprint.date;
+      legendBox.innerHTML = `
+        <span class="legend-item"><span class="dot red"></span>${sprint.legend.problem} проблем</span>
+        <span class="legend-item"><span class="dot yellow"></span>${sprint.legend.attention} внимание</span>
+        <span class="legend-item"><span class="dot green"></span>${sprint.legend.normal} норма</span>
+      `;
+    }
+
+    function renderAlert() {
+      const sprint = getCurrentSprint();
+      if (activeTab === "overview" && sprint.alert) {
+        alertBox.classList.add("show");
+        alertBox.innerHTML = `
+          <span style="font-size:18px;">⚠</span>
+          <span>${sprint.alert}</span>
+        `;
+      } else {
+        alertBox.classList.remove("show");
+        alertBox.innerHTML = "";
+      }
+    }
+
+    function renderMetrics() {
+      const sprint = getCurrentSprint();
+      let metrics = [...sprint.metrics];
+
+      if (activeFilter === "issues") {
+        metrics = metrics.filter(m => m.status !== "normal");
+      }
+      if (activeFilter === "normal") {
+        metrics = metrics.filter(m => m.status === "normal");
+      }
+
+      metricsGrid.innerHTML = metrics.map(m => `
+        <article class="metric-card ${m.status}">
+          <div class="metric-head">
+            <div class="metric-title">
+              ${iconSvg(m.key)}
+              <span>${m.title}</span>
+            </div>
+            <div class="status-badge ${m.status}">${statusLabel(m.status)}</div>
+          </div>
+
+          <div class="metric-value">
+            <span class="num">${m.value}</span>
+            <span class="unit">${m.unit}</span>
+          </div>
+
+          <div class="delta ${m.deltaColor === 'red' ? 'red' : m.deltaColor === 'gray' ? 'gray' : ''}">
+            ${m.delta}
+          </div>
+
+          <div class="metric-desc">${m.desc}</div>
+
+          ${m.note ? `<div class="metric-note">${m.note}</div>` : ``}
+        </article>
+      `).join("");
+    }
+
+    function progressClass(member) {
+      if (member.state === "blocked") return "red";
+      if (member.state === "risk") return "yellow";
+      if (member.percent < 70 && member.state === "ok") return "yellow";
+      return "green";
+    }
+
+    function stateText(state) {
+      if (state === "ok") return "● В порядке";
+      if (state === "risk") return "● Под риском";
+      return "● Заблокирован";
+    }
+
+    function renderTeam() {
+      teamGrid.innerHTML = teamMembers.map(m => `
+        <div class="member-card ${m.state}">
+          <div class="member-top">
+            <div class="member-info">
+              <div class="avatar ${m.avatar}">${m.initials}</div>
+              <div>
+                <p class="member-name">${m.name}</p>
+                <div class="member-role">${m.role}</div>
+              </div>
+            </div>
+            <div class="member-state ${m.state}">${stateText(m.state)}</div>
+          </div>
+
+          <div class="tasks-row">
+            <span>Задачи: ${m.tasks}</span>
+            <span>${m.percent}%</span>
+          </div>
+
+          <div class="progress ${progressClass(m)}">
+            <span style="width:${m.percent}%"></span>
+          </div>
+
+          <div class="prs-row">
+            <span>⇅ Открытых PR: ${m.prs}</span>
+            <span class="${m.state === 'blocked' ? 'member-state blocked' : ''}">
+              ${m.prs >= 4 ? 'Много' : ''}
+            </span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeFilter = btn.dataset.filter;
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderMetrics();
+      });
+    });
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeTab = btn.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        updateSections();
+      });
+    });
+
+    function updateSections() {
+      document.getElementById("overviewSection").classList.toggle("active", activeTab === "overview");
+      document.getElementById("graphsSection").classList.toggle("active", activeTab === "graphs");
+      document.getElementById("teamSection").classList.toggle("active", activeTab === "team");
+
+      renderAlert();
+
+      if (activeTab === "graphs") {
+        buildCharts();
+      }
+      if (activeTab === "team") {
+        renderTeam();
+      }
+    }
+
+    function render() {
+      renderSprintNav();
+      renderHeaderMeta();
+      renderAlert();
+      renderMetrics();
+      if (activeTab === "team") renderTeam();
+      if (activeTab === "graphs") buildCharts();
+    }
+
+    let velocityChart, bugsChart, reviewChart, cycleDeployChart;
+
+    function destroyChart(instance) {
+      if (instance) instance.destroy();
+    }
+
+    function buildCharts() {
+      const labels = sprintData.map(s => s.name.replace("Спринт ", "Спринт "));
+      const planned = [52, 55, 50, 54];
+      const done = [47, 38, 49, 42];
+      const bugs = [8, 14, 11, 9];
+      const review = [6.2, 14.5, 9.8, 11.2];
+      const cycle = [3.1, 5.4, 4.2, 4.8];
+      const deploys = [4, 2, 3, 3];
+
+      destroyChart(velocityChart);
+      destroyChart(bugsChart);
+      destroyChart(reviewChart);
+      destroyChart(cycleDeployChart);
+
+      velocityChart = new Chart(document.getElementById("velocityChart"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "запланировано",
+              data: planned,
+              backgroundColor: "#dfe5ef",
+              borderRadius: 8
+            },
+            {
+              label: "выполнено",
+              data: done,
+              backgroundColor: "#5b5ce8",
+              borderRadius: 8
+            }
+          ]
+        },
+        options: commonChartOptions({
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: gridX(),
+            y: gridY()
+          }
+        })
+      });
+
+      bugsChart = new Chart(document.getElementById("bugsChart"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Баги",
+              data: bugs,
+              borderColor: "#ff4459",
+              backgroundColor: "rgba(255,68,89,0.08)",
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4,
+              pointBackgroundColor: "#fff",
+              pointBorderColor: "#ff4459",
+              pointBorderWidth: 2
+            },
+            {
+              label: "Норма",
+              data: [10, 10, 10, 10],
+              borderColor: "#f5b31d",
+              borderDash: [6, 6],
+              tension: 0,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: commonChartOptions({
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: gridX(),
+            y: gridY()
+          }
+        })
+      });
+
+      reviewChart = new Chart(document.getElementById("reviewChart"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Часы",
+              data: review,
+              borderColor: "#7a52ff",
+              backgroundColor: "rgba(122,82,255,0.08)",
+              fill: false,
+              tension: 0.35,
+              pointRadius: 4,
+              pointBackgroundColor: "#7a52ff"
+            },
+            {
+              label: "Цель 8ч",
+              data: [8, 8, 8, 8],
+              borderColor: "#15c381",
+              borderDash: [6, 6],
+              pointRadius: 0,
+              tension: 0
+            }
+          ]
+        },
+        options: commonChartOptions({
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: gridX(),
+            y: gridY()
+          }
+        })
+      });
+
+      cycleDeployChart = new Chart(document.getElementById("cycleDeployChart"), {
+        data: {
+          labels,
+          datasets: [
+            {
+              type: "bar",
+              label: "Дней (cycle time)",
+              data: cycle,
+              backgroundColor: "#17b6cf",
+              borderRadius: 6,
+              yAxisID: "y"
+            },
+            {
+              type: "bar",
+              label: "Деплоев",
+              data: deploys,
+              backgroundColor: "#f3a514",
+              borderRadius: 6,
+              yAxisID: "y1"
+            }
+          ]
+        },
+        options: commonChartOptions({
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: gridX(),
+            y: {
+              beginAtZero: true,
+              ticks: { color: "#90a0bc", font: { family: "Inter" } },
+              grid: { color: "#edf2f8" },
+              border: { display: false }
+            },
+            y1: {
+              beginAtZero: true,
+              position: "right",
+              ticks: { color: "#90a0bc", font: { family: "Inter" } },
+              grid: { drawOnChartArea: false },
+              border: { display: false }
+            }
+          }
+        })
+      });
+    }
+
+    function commonChartOptions(extra = {}) {
+      return {
+        plugins: {
+          legend: {
+            labels: {
+              color: "#6f84a1",
+              font: { family: "Inter", weight: "700" },
+              boxWidth: 14,
+              boxHeight: 14
+            }
+          },
+          tooltip: {
+            backgroundColor: "#ffffff",
+            titleColor: "#1d2940",
+            bodyColor: "#1d2940",
+            borderColor: "#dfe7f2",
+            borderWidth: 1,
+            padding: 12,
+            displayColors: true
+          }
+        },
+        ...extra
+      };
+    }
+
+    function gridX() {
+      return {
+        ticks: { color: "#90a0bc", font: { family: "Inter" } },
+        grid: { color: "#edf2f8" },
+        border: { display: false }
+      };
+    }
+
+    function gridY() {
+      return {
+        beginAtZero: true,
+        ticks: { color: "#90a0bc", font: { family: "Inter" } },
+        grid: { color: "#edf2f8" },
+        border: { display: false }
+      };
+    }
+
+    render();
+    </script>
+</body>
+
+</html>
